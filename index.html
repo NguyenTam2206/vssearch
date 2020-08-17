@@ -5,6 +5,15 @@
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <style>
+    .v-input--radio-group--column .v-radio:not(:last-child):not(:only-child) {
+      margin-bottom: 0px;
+    }
+
+    .v-radio {
+      margin-right: 15px;
+    }
+  </style>
 </head>
 
 <body>
@@ -13,11 +22,33 @@
       <v-main>
         <v-container>
           <v-row>
-            <v-col cols="12" md="8">
-              <v-file-input :rules="rules" accept="image/png, image/jpeg, image/bmp" placeholder="Pick your product"
-                prepend-icon="mdi-camera" label="Product Image" @change="inputFile($event)"></v-file-input>
+            <v-col cols="12" md="10">
+              <!--Desktop-->
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-file-input :rules="rules" accept="image/png, image/jpeg, image/bmp" placeholder="Pick your product"
+                    prepend-icon="mdi-camera" label="Product Image" @change="inputFile($event)">
+                  </v-file-input>
+                </v-col>
+                <v-col cols="12" md=6 class="hidden-sm-and-down" style="align-self: center">
+                  <v-btn color="primary" @click="searchProduct">Search Product</v-btn>
+                </v-col>
+              </v-row>
+              <div style="color : red" v-if="mess" class="hidden-sm-and-down">{{mess}}</div>
+              <v-radio-group v-model="radioGroup">
+                <div class="d-flex">
+                  <v-radio label="Tất cả" value="All"></v-radio>
+                  <v-radio label="Nam" value="Male"></v-radio>
+                  <v-radio label="Nữ" value="Female"></v-radio>
+                  <v-radio label="Unisex" value="Unisex"></v-radio>
+                </div>
+              </v-radio-group>
+              <div style="text-align: center; color : red" v-if="mess" class="hidden-md-and-up">{{mess}}</div>
+              <v-col cols="12" class="hidden-md-and-up" style="align-self: center; text-align: center">
+                <v-btn color="primary" @click="searchProduct">Search Product</v-btn>
+              </v-col>
             </v-col>
-            <v-col v-if="src" cols="12" md="4" order-md="first">
+            <v-col v-if="src" cols="12" md="2" order-md="first">
               <img :src="src" alt="" style="width : 100%">
             </v-col>
           </v-row>
@@ -50,25 +81,44 @@
       data: {
         rules: [],
         src: '',
-        booproducts: []
+        booproducts: [],
+        radioGroup: 'All',
+        img: null,
+        mess: ""
       },
       methods: {
         inputFile(e) {
-          console.log(e)
           if (e) {
+            this.img = e
             this.src = URL.createObjectURL(e);
           }
           if (!e) {
             this.src = null
           }
+        },
+        searchProduct() {
           let formData = new FormData();
-          formData.set('img', e)
+          formData.set('img', this.img)
+          const genderObj = {gender : this.radioGroup}
+          const jsonObj = JSON.stringify(genderObj);
+          let param;
+          if (this.radioGroup === "All") {
+            param = ''
+          } else {
+            param = `?filter=${jsonObj}`
+          }
           axios({
             method: 'post',
-            url: 'https://glados.boo.vn/v1/api/ai/vision_product/search',
+            url: `https://glados.boo.vn/v1/api/ai/vision_product/search${param ? param : ''}`,
             data: formData
           }).then(res => {
-            this.booproducts = res.data.data
+            if (res.data.data) {
+              this.booproducts = res.data.data
+            } else {
+              console.log(res.data.message)
+              this.mess = res.data.message
+            }
+
           }).catch(err => console.log(err))
         }
       }
