@@ -99,8 +99,15 @@
         searchProduct() {
           let formData = new FormData();
           formData.set('img', this.img)
-          const genderObj = {gender : this.radioGroup}
+          const genderObj = { gender: this.radioGroup }
           const jsonObj = JSON.stringify(genderObj);
+          const currentUrl = window.location.href
+          let isDebugParam
+          if (currentUrl === 'https://moon.boo.vn/?is_debug=true') {
+            isDebugParam = '&is_debug=true'
+          } else {
+            isDebugParam = ''
+          }
           let param;
           if (this.radioGroup === "All") {
             param = ''
@@ -109,8 +116,12 @@
           }
           axios({
             method: 'post',
-            url: `https://glados.boo.vn/v1/api/ai/vision_product/search${param ? param : ''}`,
-            data: formData
+            url: `https://glados.boo.vn/v1/api/ai/vision_saas/search${param ? param : ''}${isDebugParam}`,
+            data: formData,
+            headers: {
+              'Access-Token': 'test',
+              'PS-Code': 'IVTLzIFgJ89Oh'
+            }
           }).then(res => {
             if (res.data.data) {
               this.booproducts = res.data.data
