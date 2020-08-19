@@ -102,21 +102,52 @@
           const genderObj = { gender: this.radioGroup }
           const jsonObj = JSON.stringify(genderObj);
           const currentUrl = window.location.href
-          let isDebugParam
-          if (currentUrl === 'https://moon.boo.vn/?is_debug=true') {
-            isDebugParam = '&is_debug=true'
-          } else {
-            isDebugParam = ''
-          }
-          let param;
+          let ObjParam;
           if (this.radioGroup === "All") {
-            param = ''
+            if (currentUrl === 'https://moon.boo.vn/?is_debug=true') {
+              ObjParam = {
+                is_debug: true
+              }
+            }
+            if (currentUrl !== 'https://moon.boo.vn/?is_debug=true') {
+              ObjParam = {}
+            }
           } else {
-            param = `?filter=${jsonObj}`
+            if (currentUrl === 'https://moon.boo.vn/?is_debug=true') {
+              ObjParam = {
+                is_debug: true,
+                filter: jsonObj
+              }
+            }
+            if (currentUrl !== 'https://moon.boo.vn/?is_debug=true') {
+              ObjParam = {
+                filter: jsonObj
+              }
+            }
           }
+          const serialize = function (obj) {
+            var str = [];
+            for (var p in obj)
+              if (obj.hasOwnProperty(p)) {
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+              }
+            return str.join("&");
+          }
+          const param = serialize(ObjParam)
+          // if (currentUrl === 'https://moon.boo.vn/?is_debug=true') {
+          //   isDebugParam = '&is_debug=true'
+          // } else {
+          //   isDebugParam = ''
+          // }
+          // let param;
+          // if (this.radioGroup === "All") {
+          //   param = ''
+          // } else {
+          //   param = `?filter=${jsonObj}`
+          // }
           axios({
             method: 'post',
-            url: `https://glados.boo.vn/v1/api/ai/vision_saas/search${param ? param : ''}${isDebugParam}`,
+            url: `https://glados.boo.vn/v1/api/ai/vision_saas/search${param ? `?${param}` : ''}`,
             data: formData,
             headers: {
               'Access-Token': 'test',
