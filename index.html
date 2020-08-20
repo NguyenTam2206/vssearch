@@ -31,7 +31,9 @@
                   </v-file-input>
                 </v-col>
                 <v-col cols="12" md=6 class="hidden-sm-and-down" style="align-self: center">
-                  <v-btn color="primary" @click="searchProduct">Search Product</v-btn>
+                  <v-btn color="primary" @click="searchProduct" :loading="loading" :disabled="loading">
+                    Search Product
+                  </v-btn>
                 </v-col>
               </v-row>
               <div style="color : red" v-if="mess" class="hidden-sm-and-down">{{mess}}</div>
@@ -84,7 +86,19 @@
         booproducts: [],
         radioGroup: 'All',
         img: null,
-        mess: ""
+        mess: "",
+        loading: false,
+      },
+      watch: {
+        loader() {
+          const l = this.loader
+          console.log('aa' + this[l])
+          this[l] = !this[l]
+
+          setTimeout(() => (this[l] = false), 3000)
+
+          this.loader = null
+        },
       },
       methods: {
         inputFile(e) {
@@ -145,6 +159,7 @@
           // } else {
           //   param = `?filter=${jsonObj}`
           // }
+          this.loading = true
           axios({
             method: 'post',
             url: `https://glados.boo.vn/v1/api/ai/vision_saas/search${param ? `?${param}` : ''}`,
@@ -161,6 +176,8 @@
               this.mess = res.data.message
             }
 
+          }).then(() => {
+            this.loading = false
           }).catch(err => console.log(err))
         }
       }
